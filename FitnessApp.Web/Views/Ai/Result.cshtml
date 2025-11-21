@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Size Özel Plan";
+}
+
+<div class="container mt-5 text-center">
+    <h2 class="text-primary">🎉 Analiz Tamamlandı!</h2>
+    <hr />
+    
+    <div class="alert alert-info">
+        <h4>🔍 Vücut Analizi</h4>
+        <p class="lead">@ViewBag.Result</p>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card border-success mb-3">
+                <div class="card-header bg-success text-white">🍏 Önerilen Diyet Planı</div>
+                <div class="card-body">
+                    <p class="card-text">@ViewBag.Diet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary mt-3">Yeni Sorgulama Yap</a>
+</div>

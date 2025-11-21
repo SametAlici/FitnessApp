@@ -26,6 +26,17 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        @if (User.IsInRole("Admin"))
+                     {
+                      <li class="nav-item">
+                 <a class="nav-link text-dark" asp-controller="Services" asp-action="Index">Hizmetler</a>
+                  </li>
+                  <li class="nav-item">
+                 <a class="nav-link text-dark" asp-controller="Trainers" asp-action="Index">Antrenörler</a>
+                  </li>}
+                  <li class="nav-item">
+    <a class="nav-link text-dark fw-bold" asp-controller="Ai" asp-action="Index">🤖 AI Tavsiye</a>
+</li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

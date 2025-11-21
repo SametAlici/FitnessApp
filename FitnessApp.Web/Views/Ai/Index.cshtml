@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Yapay Zeka Antrenör";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3>🤖 AI Fitness Asistanı</h3>
+                </div>
+                <div class="card-body">
+                    <p>Bilgilerinizi girin, yapay zeka size özel program çıkarsın.</p>
+                    
+                    <form asp-action="GeneratePlan" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Boyunuz (cm)</label>
+                            <input type="number" name="height" class="form-control" placeholder="Örn: 180" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Kilonuz (kg)</label>
+                            <input type="number" name="weight" class="form-control" placeholder="Örn: 80" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hedefiniz</label>
+                            <select name="goal" class="form-select">
+                                <option value="lose_weight">Kilo Vermek</option>
+                                <option value="muscle">Kas Yapmak</option>
+                                <option value="keep">Formu Korumak</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Planı Oluştur 🚀</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
