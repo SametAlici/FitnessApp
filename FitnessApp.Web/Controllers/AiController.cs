@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using System.Text.Json;
 using Google.GenAI;
+using System.Text.Json;
 
 namespace FitnessApp.Web.Controllers
 {
@@ -12,7 +12,6 @@ namespace FitnessApp.Web.Controllers
 
         public AiController(IConfiguration config)
         {
-            // appsettings.json → "GoogleGeminiApiKey"
             _apiKey = config["GoogleGeminiApiKey"];
         }
 
@@ -24,74 +23,67 @@ namespace FitnessApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GeneratePlan(double height, double weight, string goal)
         {
-            // Eğer API key yoksa hata versin
             if (string.IsNullOrEmpty(_apiKey))
             {
-                ViewBag.Result = "API anahtarı bulunamadı.";
-                ViewBag.Diet = "Lütfen appsettings.json içine API anahtarını ekleyin.";
-                return View("Result");
+                return View("Result", new AiAdvice
+                {
+                    analiz = "API anahtarı bulunamadı.",
+                    diyet = "Lütfen appsettings.json içine API anahtarını ekleyin."
+                });
             }
 
-            // 1. Prompt
             string userPrompt =
-                $"Ben {height} cm boyunda, {weight} kg ağırlığında biriyim. " +
+                $"Ben {height} cm boyunda, {weight} kg ağırlığındayım. " +
                 $"Hedefim: {GetGoalText(goal)}. " +
-                $"Bana BMI değerimi hesapla. " +
-                $"Sonra kısa bir egzersiz önerisi ver. " +
-                $"Ardından 1 günlük diyet menüsü yaz (Sabah, Öğle, Akşam). " +
-                $"Cevabı sadece JSON olarak ver: " +
-                $"{{ \"analiz\": \"...\", \"diyet\": \"...\" }}";
+                $"BMI değerimi hesapla. " +
+                $"Kısa bir egzersiz önerisi ver. " +
+                $"1 günlük diyet menüsü yaz (Sabah, Öğle, Akşam). " +
+                $"Cevabı SADECE şu formatta ver:\n\n" +
+                "{\n" +
+                "  \"analiz\": \"metin\",\n" +
+                "  \"diyet\": \"metin\"\n" +
+                "}";
 
             try
             {
-                // 2. API key'i environment'a set et
                 Environment.SetEnvironmentVariable("GOOGLE_API_KEY", _apiKey);
 
-                // 3. Client oluştur
                 var client = new Client();
-
-                // 4. İstek gönder
                 var response = await client.Models.GenerateContentAsync(
                     model: "gemini-2.0-flash",
                     contents: userPrompt
                 );
 
-                // 5. Cevabı al
                 string aiText = response?.Candidates?[0]?.Content?.Parts?[0]?.Text ?? "";
 
-                if (string.IsNullOrWhiteSpace(aiText))
-                {
-                    ViewBag.Result = "Yapay zekadan boş cevap geldi.";
-                    return View("Result");
-                }
+                aiText = aiText.Replace("```json", "").Replace("```", "").Trim();
 
-                // 6. Gereksiz markdown temizleme
-                aiText = aiText.Replace("```json", "")
-                               .Replace("```", "")
-                               .Trim();
+                AiAdvice parsed = null;
 
-                // 7. JSON parse et
                 try
                 {
-                    var parsed = JsonSerializer.Deserialize<AiAdvice>(aiText);
-
-                    ViewBag.Result = parsed?.analiz ?? "Analiz bulunamadı.";
-                    ViewBag.Diet = parsed?.diyet ?? "Diyet bulunamadı.";
+                    parsed = JsonSerializer.Deserialize<AiAdvice>(aiText);
                 }
                 catch
                 {
-                    // JSON bozuksa düz metin göster
-                    ViewBag.Result = aiText;
-                    ViewBag.Diet = "JSON formatı bozuk olduğu için düz metin gösterildi.";
+                    // JSON bozuk dönerse yine de gösterelim
+                    parsed = new AiAdvice
+                    {
+                        analiz = "JSON okunamadı. Ham çıktı gösteriliyor:\n\n" + aiText,
+                        diyet = ""
+                    };
                 }
+
+                return View("Result", parsed);
             }
             catch (Exception ex)
             {
-                ViewBag.Result = "Bağlantı hatası oluştu.";
-                ViewBag.Diet = ex.Message;
+                return View("Result", new AiAdvice
+                {
+                    analiz = "Bağlantı hatası oluştu.",
+                    diyet = ex.Message
+                });
             }
-
-            return View("Result");
         }
 
         private string GetGoalText(string goal) => goal switch

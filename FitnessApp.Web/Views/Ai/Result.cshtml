@@ -1,26 +1,74 @@
+@model FitnessApp.Web.Controllers.AiController.AiAdvice
 @{
-    ViewData["Title"] = "Size Özel Plan";
+    ViewData["Title"] = "AI Analiz Sonucu";
 }
 
-<div class="container mt-5 text-center">
-    <h2 class="text-primary">🎉 Analiz Tamamlandı!</h2>
-    <hr />
-    
-    <div class="alert alert-info">
-        <h4>🔍 Vücut Analizi</h4>
-        <p class="lead">@ViewBag.Result</p>
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">
+            <i class="bi bi-stars text-warning"></i> Analiz Tamamlandı!
+        </h1>
+        <p class="lead text-muted">Yapay zeka verilerinizi inceledi ve size özel planı hazırladı.</p>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6 offset-md-3">
-            <div class="card border-success mb-3">
-                <div class="card-header bg-success text-white">🍏 Önerilen Diyet Planı</div>
-                <div class="card-body">
-                    <p class="card-text">@ViewBag.Diet</p>
+    <div class="row justify-content-center g-4">
+
+        <!-- ANALİZ KARTI -->
+        <div class="col-md-10 col-lg-8">
+            <div class="card border-0 shadow-sm hover-card">
+                <div class="card-header bg-primary text-white d-flex align-items-center py-3">
+                    <i class="bi bi-activity fs-4 me-3"></i>
+                    <h4 class="mb-0 fw-light">Vücut Analizi ve Egzersiz Önerisi</h4>
+                </div>
+                <div class="card-body bg-light p-4">
+                    <div class="card-text fs-5 text-dark" style="white-space: pre-line; line-height: 1.8;">
+                        @Model.analiz
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- DİYET KARTI -->
+        @if (!string.IsNullOrWhiteSpace(Model.diyet))
+        {
+            <div class="col-md-10 col-lg-8">
+                <div class="card border-0 shadow-sm hover-card">
+                    <div class="card-header bg-success text-white d-flex align-items-center py-3">
+                        <i class="bi bi-basket fs-4 me-3"></i>
+                        <h4 class="mb-0 fw-light">Günlük Beslenme Planı</h4>
+                    </div>
+
+                    <div class="card-body bg-light p-4">
+                        <div class="card-text fs-5 text-dark" style="white-space: pre-line; line-height: 1.8;">
+                            @Model.diyet
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
     </div>
 
-    <a asp-action="Index" class="btn btn-secondary mt-3">Yeni Sorgulama Yap</a>
+    <div class="text-center mt-5 mb-5">
+        <a asp-action="Index" class="btn btn-outline-primary btn-lg px-5 rounded-pill shadow-sm transition-btn">
+            <i class="bi bi-arrow-counterclockwise"></i> Yeni Bir Sorgu Yap
+        </a>
+    </div>
 </div>
+
+<style>
+    .hover-card {
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 22px rgba(0,0,0,.15) !important;
+    }
+    .transition-btn:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
