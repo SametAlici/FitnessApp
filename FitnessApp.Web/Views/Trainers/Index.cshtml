@@ -1,47 +1,83 @@
 @model IEnumerable<FitnessApp.Web.Models.Trainer>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Antrenörlerimiz";
 }
 
-<h1>Index</h1>
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">💪 Antrenör Kadromuz</h1>
+        <p class="lead text-muted">Uzman eğitmenlerimizle hedeflerinize ulaşın.</p>
+        
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-success btn-lg shadow-sm">
+                <i class="bi bi-person-plus-fill"></i> Yeni Antrenör Ekle
+            </a>
+        }
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Specialty)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PhotoUrl)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Specialty)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PhotoUrl)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm hover-card">
+                    <div class="text-center mt-4">
+                        <img src="@(string.IsNullOrEmpty(item.PhotoUrl) ? "https://cdn-icons-png.flaticon.com/512/8815/8815112.png" : item.PhotoUrl)" 
+                             class="rounded-circle img-thumbnail shadow-sm" 
+                             alt="@item.FullName" 
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    </div>
+
+                    <div class="card-body text-center">
+                        <h4 class="card-title fw-bold mb-1">@item.FullName</h4>
+                        <p class="text-primary fw-bold mb-2">@item.Specialty</p>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-light text-dark border">
+                                🕒 @item.WorkStartHour:00 - @item.WorkEndHour:00
+                            </span>
+                        </div>
+
+                        @if (item.Services != null && item.Services.Any())
+                        {
+                            <div class="mb-3">
+                                @foreach (var service in item.Services)
+                                {
+                                    <span class="badge bg-info text-dark me-1">@service.Name</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted small">Henüz hizmet atanmamış.</p>
+                        }
+                    </div>
+
+                    <div class="card-footer bg-white border-0 text-center pb-4">
+                        <a asp-controller="Appointments" asp-action="Index" class="btn btn-outline-primary w-75 mb-2">📅 Randevu Al</a>
+                        
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="btn-group w-75" role="group">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Düzenle</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Detay</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Sil</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+</style>

@@ -1,50 +1,113 @@
 @model FitnessApp.Web.Models.Appointment
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Randevu Al";
 }
 
-<h1>Create</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">📅 Yeni Randevu Oluştur</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="All" class="text-danger"></div>
 
-<h4>Appointment</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" />
-                <span asp-validation-for="Date" class="text-danger"></span>
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-bold">Randevu Tarihi</label>
+                            <input type="date" name="selectedDate" class="form-control" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-bold">Randevu Saati</label>
+                            <select name="selectedHour" class="form-select" required>
+                                <option value="">-- Saat Seçiniz --</option>
+                                @for (int i = 7; i <= 22; i++)
+                                {
+                                    <option value="@i">@i:00</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ServiceId" class="form-label fw-bold">Hizmet/Ders Seçiniz</label>
+                            <select asp-for="ServiceId" class ="form-select" asp-items="ViewBag.ServiceId">
+                                <option value="">-- Bir Hizmet Seçin --</option>
+                            </select>
+                        </div>
+
+                        <div class="alert alert-success text-center" id="priceAlert" style="display:none;">
+                            <strong>Tahmini Ücret:</strong> <span id="priceDisplay" class="fs-4 fw-bold">0</span> ₺
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="TrainerId" class="form-label fw-bold">Antrenör Seçiniz</label>
+                            <select asp-for="TrainerId" class ="form-select" disabled>
+                                <option value="">-- Önce Hizmet Seçiniz --</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <input type="submit" value="Randevuyu Onayla ✅" class="btn btn-success btn-lg" />
+                            <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Status" class="control-label"></label>
-                <select asp-for="Status" class="form-control"></select>
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MemberId" class="control-label"></label>
-                <select asp-for="MemberId" class ="form-control" asp-items="ViewBag.MemberId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="TrainerId" class="control-label"></label>
-                <select asp-for="TrainerId" class ="form-control" asp-items="ViewBag.TrainerId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="ServiceId" class="control-label"></label>
-                <select asp-for="ServiceId" class ="form-control" asp-items="ViewBag.ServiceId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            var allTrainers = @Html.Raw(ViewBag.TrainerData ?? "[]");
+            var allServices = @Html.Raw(ViewBag.ServiceData ?? "[]"); // Fiyat verisi
+            
+            var $serviceSelect = $("#ServiceId");
+            var $trainerSelect = $("#TrainerId");
+            var $priceDisplay = $("#priceDisplay");
+            var $priceAlert = $("#priceAlert");
+
+            $serviceSelect.change(function () {
+                var selectedServiceId = parseInt($(this).val());
+                $trainerSelect.empty();
+                
+                if (selectedServiceId) {
+                    // 1. Fiyatı Bul ve Göster
+                    var serviceInfo = allServices.find(s => s.id === selectedServiceId);
+                    if(serviceInfo) {
+                        $priceDisplay.text(serviceInfo.price);
+                        $priceAlert.fadeIn();
+                    }
+
+                    // 2. Antrenörleri Filtrele
+                    var count = 0;
+                    $trainerSelect.append('<option value="">-- Bir Antrenör Seçin --</option>');
+
+                    $.each(allTrainers, function (index, trainer) {
+                        if (trainer.serviceIds.includes(selectedServiceId)) {
+                            $trainerSelect.append('<option value="' + trainer.id + '">' + trainer.fullName + '</option>');
+                            count++;
+                        }
+                    });
+
+                    if(count > 0) {
+                         $trainerSelect.prop("disabled", false);
+                    } else {
+                         $trainerSelect.append('<option value="">❌ Bu hizmeti veren hoca bulunamadı</option>');
+                         $trainerSelect.prop("disabled", true);
+                    }
+                } else {
+                    $trainerSelect.prop("disabled", true);
+                    $trainerSelect.append('<option value="">-- Önce Hizmet Seçiniz --</option>');
+                    $priceAlert.hide(); // Seçim yoksa fiyatı gizle
+                }
+            });
+        });
+    </script>
 }

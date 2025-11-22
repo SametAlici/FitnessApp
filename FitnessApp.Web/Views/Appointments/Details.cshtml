@@ -1,48 +1,42 @@
 @model FitnessApp.Web.Models.Appointment
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Randevu Detayı";
 }
 
-<h1>Details</h1>
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h3 class="mb-0">📄 Randevu Bilgileri</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row fs-5">
+                <dt class="col-sm-4">📅 Tarih:</dt>
+                <dd class="col-sm-8">@Model.Date.ToString("dd.MM.yyyy HH:mm")</dd>
 
-<div>
-    <h4>Appointment</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Member)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Member.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Trainer)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Trainer.FullName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Service)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Service.Name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+                <dt class="col-sm-4">👤 Üye:</dt>
+                <dd class="col-sm-8">@Model.Member?.UserName</dd>
+
+                <dt class="col-sm-4">💪 Antrenör:</dt>
+                <dd class="col-sm-8">@Model.Trainer?.FullName</dd>
+
+                <dt class="col-sm-4">🧘 Hizmet:</dt>
+                <dd class="col-sm-8">@Model.Service?.Name</dd>
+
+                <dt class="col-sm-4">💰 Ücret:</dt>
+                <dd class="col-sm-8" class="text-success fw-bold">
+                    @Model.Service?.Price.ToString("C2") </dd>
+                <dt class="col-sm-4">📌 Durum:</dt>
+                <dd class="col-sm-8">
+                    @if(Model.Status.ToString() == "Pending") { <span class="badge bg-warning text-dark">Bekliyor</span> }
+                    else if(Model.Status.ToString() == "Confirmed") { <span class="badge bg-success">Onaylı</span> }
+                    else if(Model.Status.ToString() == "Cancelled") { <span class="badge bg-danger">İptal Edildi</span> }
+                    else { <span class="badge bg-secondary">Tamamlandı</span> }
+                </dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+        </div>
+    </div>
 </div>

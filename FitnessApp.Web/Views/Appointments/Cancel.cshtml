@@ -1,0 +1,28 @@
+@model FitnessApp.Web.Models.Appointment
+
+@{
+    ViewData["Title"] = "Randevu İptali";
+}
+
+<div class="container mt-5">
+    <div class="card shadow border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3 class="mb-0">⚠️ Randevuyu İptal Et</h3>
+        </div>
+        <div class="card-body text-center">
+            <h4 class="mb-4">Bu randevuyu iptal etmek istediğinize emin misiniz?</h4>
+            
+            <div class="alert alert-secondary d-inline-block text-start px-5">
+                <p class="fs-5"><strong>📅 Tarih:</strong> @Model.Date.ToString("dd.MM.yyyy HH:mm")</p>
+                <p class="fs-5"><strong>💪 Antrenör:</strong> @Model.Trainer?.FullName</p>
+                <p class="fs-5"><strong>🧘 Hizmet:</strong> @Model.Service?.Name</p>
+            </div>
+            
+            <form asp-action="Cancel" class="mt-4">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger btn-lg px-4">Evet, İptal Et</button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg px-4">Vazgeç</a>
+            </form>
+        </div>
+    </div>
+</div>
