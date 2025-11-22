@@ -24,9 +24,13 @@
                     <ul class="navbar-nav flex-grow-1">
 
                         @if (User.IsInRole("Admin"))
-                        {                           
+                        {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Trainers" asp-action="Index">Antrenörler</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Trainers" asp-action="Search">🔍 Müsaitlik
+                                    Ara</a>
                             </li>
                         }
                         <li class="nav-item">

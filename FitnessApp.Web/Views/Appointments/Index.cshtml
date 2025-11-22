@@ -5,57 +5,116 @@
 }
 
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary">📅 Randevu Listesi</h2>
-        <a asp-action="Create" class="btn btn-success btn-lg">
-            <i class="bi bi-plus-circle"></i> + Yeni Randevu Al
-        </a>
+    
+    <div class="row align-items-center mb-4">
+        <div class="col-md-5">
+            <h2 class="text-primary fw-bold">📅 Randevu Listesi</h2>
+        </div>
+        
+        <div class="col-md-7">
+            <div class="d-flex justify-content-end gap-2">
+                
+                @if (User.IsInRole("Admin"))
+                {
+                    <form asp-action="Index" method="get" class="d-flex gap-2">
+                        <div class="input-group">
+                            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Üye Adı veya E-mail..." aria-label="Üye Ara">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Ara</button>
+                        </div>
+                        
+                        @if (ViewData["CurrentFilter"] != null)
+                        {
+                            <a asp-action="Index" class="btn btn-secondary">Temizle</a>
+                        }
+                    </form>
+                }
+
+                <a asp-action="Create" class="btn btn-success text-nowrap">
+                    <i class="bi bi-plus-circle"></i> + Yeni Randevu
+                </a>
+            </div>
+        </div>
     </div>
 
-    <div class="card shadow">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Tarih</th>
-                        <th>Üye</th>
-                        <th>Antrenör</th>
-                        <th>Hizmet</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model) {
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
                         <tr>
-                            <td>@item.Date.ToString("dd.MM.yyyy HH:mm")</td>
-                            <td>@item.Member?.UserName</td>
-                            <td>@item.Trainer?.FullName</td>
-                            <td>@item.Service?.Name</td>
-                            <td>
-                                @if(item.Status.ToString() == "Pending") { <span class="badge bg-warning text-dark">Bekliyor</span> }
-                                else if(item.Status.ToString() == "Confirmed") { <span class="badge bg-success">Onaylı</span> }
-                                else if(item.Status.ToString() == "Cancelled") { <span class="badge bg-danger">İptal</span> }
-                                else { <span class="badge bg-secondary">Tamamlandı</span> }
-                            </td>
-                            <td>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm text-white">Detay</a>
-
-                                @if (item.Status.ToString() == "Pending" && item.Date > DateTime.Now)
-                                {
-                                    <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-danger btn-sm">İptal Et</a>
-                                }
-
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Düzenle</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-dark btn-sm">Sil</a>
-                                }
-                            </td>
+                            <th class="py-3 ps-4">Tarih</th>
+                            <th class="py-3">Üye</th>
+                            <th class="py-3">Antrenör</th>
+                            <th class="py-3">Hizmet</th>
+                            <th class="py-3">Durum</th>
+                            <th class="py-3 text-end pe-4">İşlemler</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Henüz kayıtlı randevu bulunmamaktadır.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model) {
+                                <tr>
+                                    <td class="ps-4 fw-bold">@item.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="ms-2">
+                                                <div class="fw-bold">@item.Member?.FirstName @item.Member?.LastName</div>
+                                                <div class="text-muted small">@item.Member?.Email</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@item.Trainer?.FullName</td>
+                                    <td><span class="badge bg-info text-dark">@item.Service?.Name</span></td>
+                                    <td>
+                                        @if(item.Status.ToString() == "Pending") 
+                                        { 
+                                            <span class="badge bg-warning text-dark">Bekliyor</span> 
+                                        }
+                                        else if(item.Status.ToString() == "Confirmed") 
+                                        { 
+                                            <span class="badge bg-success">Onaylı</span> 
+                                        }
+                                        else if(item.Status.ToString() == "Cancelled") 
+                                        { 
+                                            <span class="badge bg-danger">İptal</span> 
+                                        }
+                                        else 
+                                        { 
+                                            <span class="badge bg-secondary">Tamamlandı</span> 
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Detay</a>
+
+                                            @if (item.Status.ToString() == "Pending" && item.Date > DateTime.Now)
+                                            {
+                                                <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">İptal</a>
+                                            }
+
+                                            @if (User.IsInRole("Admin"))
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-dark">Düzenle</a>
+                                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-dark">Sil</a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

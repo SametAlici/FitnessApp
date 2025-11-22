@@ -26,30 +26,46 @@ namespace FitnessApp.Web.Controllers
         }
 
         // GET: Appointments
-        public async Task<IActionResult> Index()
+        // GET: Appointments
+        // searchString: Arama kutusundan gelen üye adı veya email
+        public async Task<IActionResult> Index(string searchString)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToPage("/Account/Login", new { area = "Identity" });
 
+            // 1. Temel Sorguyu Hazırla (Henüz veritabanına gitmedi)
+            var appointmentsQuery = _context.Appointments
+                .Include(a => a.Member)
+                .Include(a => a.Service)
+                .Include(a => a.Trainer)
+                .AsQueryable();
+
             if (User.IsInRole("Admin"))
             {
-                var allAppointments = _context.Appointments
-                    .Include(a => a.Member)
-                    .Include(a => a.Service)
-                    .Include(a => a.Trainer)
-                    .OrderByDescending(a => a.Date);
-                return View(await allAppointments.ToListAsync());
+                // 2. Eğer Admin bir şey arattıysa filtrele
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    // Email içinde VEYA İsim içinde arama yap
+                    appointmentsQuery = appointmentsQuery.Where(a => 
+                        a.Member.Email.Contains(searchString) || 
+                        a.Member.FirstName.Contains(searchString) ||
+                        a.Member.LastName.Contains(searchString));
+                    
+                    // Arama bilgisini ekrana geri gönder (Kutuda yazılı kalsın)
+                    ViewData["CurrentFilter"] = searchString;
+                }
+                // Admin hepsini (veya filtrelenmiş halini) görür
             }
             else
             {
-                var myAppointments = _context.Appointments
-                    .Include(a => a.Member)
-                    .Include(a => a.Service)
-                    .Include(a => a.Trainer)
-                    .Where(a => a.MemberId == user.Id)
-                    .OrderByDescending(a => a.Date);
-                return View(await myAppointments.ToListAsync());
+                // Normal üye SADECE kendininkini görür (Arama yapamaz)
+                appointmentsQuery = appointmentsQuery.Where(a => a.MemberId == user.Id);
             }
+
+            // 3. Tarihe göre sırala ve listeyi getir
+            var result = await appointmentsQuery.OrderByDescending(a => a.Date).ToListAsync();
+            
+            return View(result);
         }
 
         // GET: Appointments/Details/5
