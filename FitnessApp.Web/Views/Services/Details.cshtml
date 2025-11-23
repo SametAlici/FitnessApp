@@ -1,48 +1,45 @@
 @model FitnessApp.Web.Models.Service
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Hizmet Detayı";
 }
 
-<h1>Details</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-md-5">
+                        <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://placehold.co/600x800?text=Fitness" : Model.ImageUrl)" 
+                             class="img-fluid h-100 w-100" 
+                             style="object-fit: cover; min-height: 300px;" 
+                             alt="@Model.Name">
+                    </div>
+                    
+                    <div class="col-md-7">
+                        <div class="card-body p-4 d-flex flex-column h-100">
+                            <h2 class="card-title fw-bold text-primary mb-3">@Model.Name</h2>
+                            
+                            <div class="mb-3">
+                                <span class="badge bg-info text-dark me-2"><i class="bi bi-clock"></i> @Model.DurationMinutes Dakika</span>
+                                <span class="badge bg-success"><i class="bi bi-cash"></i> @Model.Price ₺</span>
+                            </div>
 
-<div>
-    <h4>Service</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DurationMinutes)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DurationMinutes)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+                            <p class="card-text text-muted flex-grow-1">
+                                @Model.Description
+                            </p>
+
+                            <div class="mt-auto">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning w-100 mb-2 fw-bold">Düzenle</a>
+                                }
+                                <a asp-action="Index" class="btn btn-outline-primary w-100">Listeye Dön</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

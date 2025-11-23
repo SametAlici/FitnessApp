@@ -1,8 +1,128 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section text-center text-white d-flex align-items-center justify-content-center" 
+     style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop'); background-size: cover; background-position: center; height: 600px; border-radius: 0 0 20px 20px;">
+    
+    <div class="container">
+        <h1 class="display-2 fw-bold mb-3 animate-up">Sınırlarını Zorla!</h1>
+        <p class="lead mb-4 fs-4 animate-up" style="animation-delay: 0.2s;">
+            Profesyonel antrenörler ve Yapay Zeka destekli programlarla hayalindeki vücuda ulaş.
+        </p>
+        
+        <div class="d-flex justify-content-center gap-3 animate-up" style="animation-delay: 0.4s;">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Appointments" asp-action="Index" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
+                    📅 Hemen Randevu Al
+                </a>
+                <a asp-controller="Ai" asp-action="Index" class="btn btn-outline-light btn-lg px-5 rounded-pill shadow">
+                    🤖 AI Tavsiye Dene
+                </a>
+            }
+            else
+            {
+                <a href="/Identity/Account/Register" class="btn btn-success btn-lg px-5 rounded-pill shadow">
+                    🚀 Üye Ol ve Başla
+                </a>
+                <a href="/Identity/Account/Login" class="btn btn-outline-light btn-lg px-5 rounded-pill shadow">
+                    Giriş Yap
+                </a>
+            }
+        </div>
+    </div>
 </div>
+
+<div class="container mt-5 pt-4">
+    <div class="row text-center g-4">
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-effect p-4">
+                <div class="mb-3 text-primary">
+                    <i class="bi bi-people-fill display-4"></i>
+                </div>
+                <h3 class="fw-bold">Uzman Antrenörler</h3>
+                <p class="text-muted">Alanında uzman, sertifikalı eğitmenlerimizle birebir çalışma imkanı.</p>
+                <a asp-controller="Trainers" asp-action="Index" class="btn btn-link text-decoration-none">Eğitmenleri Gör &rarr;</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow hover-effect p-4 bg-primary text-white transform-scale">
+                <div class="mb-3 text-warning">
+                    <i class="bi bi-cpu-fill display-4"></i>
+                </div>
+                <h3 class="fw-bold">Yapay Zeka Desteği</h3>
+                <p class="text-white-50">Vücut analizinize göre size özel diyet ve egzersiz programını saniyeler içinde oluşturun.</p>
+                <a asp-controller="Ai" asp-action="Index" class="btn btn-light rounded-pill px-4 mt-2 text-primary fw-bold">AI Asistanı Dene</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-effect p-4">
+                <div class="mb-3 text-success">
+                    <i class="bi bi-activity display-4"></i>
+                </div>
+                <h3 class="fw-bold">Geniş Hizmet Ağı</h3>
+                <p class="text-muted">Yoga, Pilates, Fitness ve daha fazlası. Size uygun dersi seçin ve başlayın.</p>
+                <a asp-controller="Services" asp-action="Index" class="btn btn-link text-decoration-none">Hizmetleri İncele &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid bg-dark text-white mt-5 py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <h2 class="fw-bold text-warning">09:00 - 22:00</h2>
+                <p class="mb-0">Çalışma Saatleri</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h2 class="fw-bold text-warning">+10</h2>
+                <p class="mb-0">Profesyonel Eğitmen</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h2 class="fw-bold text-warning">%100</h2>
+                <p class="mb-0">Müşteri Memnuniyeti</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Kartların üzerine gelince yukarı kalkması */
+    .hover-effect {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-effect:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+
+    /* Ortadaki kartı biraz daha büyük göstermek için */
+    .transform-scale {
+        transform: scale(1.05);
+    }
+    .transform-scale:hover {
+        transform: scale(1.1) translateY(-10px);
+    }
+
+    /* Yazıların aşağıdan yukarı kayarak gelmesi animasyonu */
+    .animate-up {
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    
+    @@keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

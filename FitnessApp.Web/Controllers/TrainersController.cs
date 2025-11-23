@@ -20,48 +20,54 @@ namespace FitnessApp.Web.Controllers
             _context = context;
         }
 
-        // GET: Trainers (LİSTELEME - Herkes Görebilir)
+        // GET: Trainers (LİSTELEME)
         public async Task<IActionResult> Index()
         {
             return View(await _context.Trainers.Include(t => t.Services).ToListAsync());
         }
 
-        // --- YENİ EKLENEN KISIM: MÜSAİTLİK ARAMA ---
-        // GET: Trainers/Search
-        public async Task<IActionResult> Search(DateTime? searchDate, int? searchHour)
+        // --- ARAMA VE MÜSAİTLİK SORGULAMA (EKSİK OLAN KISIM) ---
+        public async Task<IActionResult> Search(DateTime? searchDate, int? searchHour, string trainerName)
         {
-            // Eğer tarih seçilmediyse boş sayfa göster
-            if (searchDate == null || searchHour == null)
+            var query = _context.Trainers
+                .Include(t => t.Services)
+                .Include(t => t.Appointments.Where(a => a.Date >= DateTime.Now && a.Status != AppointmentStatus.Cancelled))
+                .AsQueryable();
+
+            // 1. İSİM İLE ARAMA
+            if (!string.IsNullOrEmpty(trainerName))
             {
-                return View(new List<Trainer>()); 
+                query = query.Where(t => t.FullName.Contains(trainerName));
+                ViewBag.SearchMode = "Name";
+            }
+            // 2. TARİH/SAAT İLE ARAMA
+            else if (searchDate != null && searchHour != null)
+            {
+                DateTime targetDate = searchDate.Value.Date.AddHours(searchHour.Value);
+                
+                var busyTrainerIds = await _context.Appointments
+                    .Where(a => a.Date == targetDate && a.Status != AppointmentStatus.Cancelled)
+                    .Select(a => a.TrainerId)
+                    .ToListAsync();
+
+                query = query.Where(t => !busyTrainerIds.Contains(t.Id) && 
+                                         t.WorkStartHour <= searchHour && 
+                                         t.WorkEndHour > searchHour);
+                
+                ViewBag.SelectedDate = searchDate.Value.ToString("yyyy-MM-dd");
+                ViewBag.SelectedHour = searchHour;
+                ViewBag.SearchMode = "Date";
+            }
+            else
+            {
+                return View(new List<Trainer>());
             }
 
-            // Seçilen tarih ve saati birleştir
-            DateTime targetDate = searchDate.Value.Date.AddHours(searchHour.Value);
-
-            // 1. O saatte DOLU olan hocaların ID'lerini bul
-            var busyTrainerIds = await _context.Appointments
-                .Where(a => a.Date == targetDate && a.Status != AppointmentStatus.Cancelled)
-                .Select(a => a.TrainerId)
-                .ToListAsync();
-
-            // 2. Müsait olanları filtrele
-            // Şart: (ID'si dolu listesinde YOK) VE (Mesai saatleri UYGUN)
-            var availableTrainers = await _context.Trainers
-                .Where(t => !busyTrainerIds.Contains(t.Id)) 
-                .Where(t => t.WorkStartHour <= searchHour && t.WorkEndHour > searchHour)
-                .Include(t => t.Services)
-                .ToListAsync();
-
-            // Seçilenleri View'a geri gönder ki ekranda kaybolmasın
-            ViewBag.SelectedDate = searchDate.Value.ToString("yyyy-MM-dd");
-            ViewBag.SelectedHour = searchHour;
-
-            return View(availableTrainers);
+            return View(await query.ToListAsync());
         }
-        // -------------------------------------------
+        // -------------------------------------------------------
 
-        // GET: Trainers/Details/5 (Herkes Görebilir)
+        // GET: Trainers/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -70,7 +76,7 @@ namespace FitnessApp.Web.Controllers
             return View(trainer);
         }
 
-        // --- ADMIN İŞLEMLERİ (KİLİTLİ) ---
+        // --- ADMIN İŞLEMLERİ (Create/Edit/Delete) ---
 
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
@@ -82,10 +88,37 @@ namespace FitnessApp.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Specialty,PhotoUrl,WorkStartHour,WorkEndHour")] Trainer trainer, int[] selectedServices)
+        // RESİM YÜKLEME İÇİN IFormFile EKLENDİ
+        public async Task<IActionResult> Create([Bind("Id,FullName,Specialty,WorkStartHour,WorkEndHour")] Trainer trainer, int[] selectedServices, IFormFile? imageFile)
         {
+            ModelState.Remove("PhotoUrl"); // Validasyon hatasını önle
+
             if (ModelState.IsValid)
             {
+                // --- RESİM YÜKLEME ---
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var extension = Path.GetExtension(imageFile.FileName);
+                    var newImageName = Guid.NewGuid() + extension;
+                    var location = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/", newImageName);
+
+                    // Klasör yoksa oluştur
+                    if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/")))
+                        Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/"));
+
+                    using (var stream = new FileStream(location, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+                    trainer.PhotoUrl = "/images/" + newImageName;
+                }
+                else
+                {
+                    trainer.PhotoUrl = "https://cdn-icons-png.flaticon.com/512/8815/8815112.png"; // Varsayılan
+                }
+                // ---------------------
+
+                // Hizmetleri Ekle
                 if (selectedServices != null)
                 {
                     trainer.Services = new List<Service>();
@@ -95,6 +128,7 @@ namespace FitnessApp.Web.Controllers
                         if (service != null) trainer.Services.Add(service);
                     }
                 }
+
                 _context.Add(trainer);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -116,31 +150,62 @@ namespace FitnessApp.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Specialty,PhotoUrl,WorkStartHour,WorkEndHour")] Trainer trainer, int[] selectedServices)
+        // RESİM GÜNCELLEME İÇİN IFormFile EKLENDİ
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Specialty,WorkStartHour,WorkEndHour")] Trainer trainer, int[] selectedServices, IFormFile? imageFile)
         {
             if (id != trainer.Id) return NotFound();
+            ModelState.Remove("PhotoUrl");
+
             if (ModelState.IsValid)
             {
-                var trainerToUpdate = await _context.Trainers.Include(t => t.Services).FirstOrDefaultAsync(t => t.Id == id);
-                if (trainerToUpdate == null) return NotFound();
-
-                trainerToUpdate.FullName = trainer.FullName;
-                trainerToUpdate.Specialty = trainer.Specialty;
-                trainerToUpdate.PhotoUrl = trainer.PhotoUrl;
-                trainerToUpdate.WorkStartHour = trainer.WorkStartHour;
-                trainerToUpdate.WorkEndHour = trainer.WorkEndHour;
-
-                trainerToUpdate.Services.Clear();
-                if (selectedServices != null)
+                try
                 {
-                    foreach (var serviceId in selectedServices)
+                    var trainerToUpdate = await _context.Trainers.Include(t => t.Services).FirstOrDefaultAsync(t => t.Id == id);
+                    if (trainerToUpdate == null) return NotFound();
+
+                    // Bilgileri Güncelle
+                    trainerToUpdate.FullName = trainer.FullName;
+                    trainerToUpdate.Specialty = trainer.Specialty;
+                    trainerToUpdate.WorkStartHour = trainer.WorkStartHour;
+                    trainerToUpdate.WorkEndHour = trainer.WorkEndHour;
+
+                    // --- RESİM GÜNCELLEME ---
+                    if (imageFile != null && imageFile.Length > 0)
                     {
-                        var service = await _context.Services.FindAsync(serviceId);
-                        if (service != null) trainerToUpdate.Services.Add(service);
+                        var extension = Path.GetExtension(imageFile.FileName);
+                        var newImageName = Guid.NewGuid() + extension;
+                        var location = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/", newImageName);
+
+                        if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/")))
+                            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/"));
+
+                        using (var stream = new FileStream(location, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        trainerToUpdate.PhotoUrl = "/images/" + newImageName;
                     }
+                    // ------------------------
+
+                    // Hizmetleri Güncelle
+                    trainerToUpdate.Services.Clear();
+                    if (selectedServices != null)
+                    {
+                        foreach (var serviceId in selectedServices)
+                        {
+                            var service = await _context.Services.FindAsync(serviceId);
+                            if (service != null) trainerToUpdate.Services.Add(service);
+                        }
+                    }
+
+                    _context.Update(trainerToUpdate);
+                    await _context.SaveChangesAsync();
                 }
-                _context.Update(trainerToUpdate);
-                await _context.SaveChangesAsync();
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!TrainerExists(trainer.Id)) return NotFound();
+                    else throw;
+                }
                 return RedirectToAction(nameof(Index));
             }
             ViewBag.Services = _context.Services.ToList();

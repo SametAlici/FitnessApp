@@ -1,22 +1,28 @@
 @model IEnumerable<FitnessApp.Web.Models.Trainer>
 
 @{
-    ViewData["Title"] = "Müsaitlik Sorgula";
+    ViewData["Title"] = "Müsaitlik ve Program Sorgula";
 }
 
 <div class="container mt-5">
     <div class="card shadow-sm border-0 mb-5">
         <div class="card-body bg-light p-4 rounded">
-            <h2 class="text-center text-primary mb-4">🔍 Müsait Antrenör Bul</h2>
+            <h2 class="text-center text-primary mb-4">🔍 Antrenör ve Müsaitlik Bul</h2>
             
-            <form asp-action="Search" method="get" class="row g-3 justify-content-center">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Tarih Seçiniz</label>
-                    <input type="date" name="searchDate" class="form-control" value="@ViewBag.SelectedDate" required />
+            <form asp-action="Search" method="get" class="row g-3 justify-content-center align-items-end">
+                
+                <div class="col-md-4 border-end pe-4">
+                    <label class="form-label fw-bold text-success">👤 Antrenör Adı İle Ara</label>
+                    <input type="text" name="trainerName" class="form-control" placeholder="Örn: Semih..." />
                 </div>
+
                 <div class="col-md-3">
-                    <label class="form-label fw-bold">Saat Seçiniz</label>
-                    <select name="searchHour" class="form-select" required>
+                    <label class="form-label fw-bold text-info">📅 Tarih Seç</label>
+                    <input type="date" name="searchDate" class="form-control" value="@ViewBag.SelectedDate" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold text-info">⏰ Saat Seç</label>
+                    <select name="searchHour" class="form-select">
                         <option value="">-- Saat --</option>
                         @for (int i = 7; i <= 22; i++)
                         {
@@ -24,42 +30,77 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-primary w-100">Sorgula</button>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100 h-100 py-2">🔍 Sorgula</button>
                 </div>
             </form>
+            <div class="text-center mt-2">
+                <small class="text-muted">* İsim yazarsanız hocanın programını, Tarih seçerseniz o an boş olanları görürsünüz.</small>
+            </div>
         </div>
     </div>
 
     @if (Model != null && Model.Any())
     {
-        <h4 class="mb-3 text-success">🎉 Müsait Antrenörler:</h4>
+        <h4 class="mb-3 text-success">🎉 Sonuçlar:</h4>
         <div class="row">
             @foreach (var item in Model)
             {
-                <div class="col-md-4 mb-4">
+                <div class="col-md-6 mb-4">
                     <div class="card h-100 border-0 shadow-sm hover-card">
-                        <div class="text-center mt-3">
-                            <img src="@(string.IsNullOrEmpty(item.PhotoUrl) ? "https://cdn-icons-png.flaticon.com/512/8815/8815112.png" : item.PhotoUrl)" 
-                                 class="rounded-circle img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;">
-                        </div>
-                        <div class="card-body text-center">
-                            <h5 class="card-title fw-bold">@item.FullName</h5>
-                            <p class="text-muted">@item.Specialty</p>
-                            <span class="badge bg-success">MÜSAİT</span>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="@(string.IsNullOrEmpty(item.PhotoUrl) ? "https://cdn-icons-png.flaticon.com/512/8815/8815112.png" : item.PhotoUrl)" 
+                                     class="rounded-circle img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                <div>
+                                    <h4 class="card-title fw-bold mb-0">@item.FullName</h4>
+                                    <p class="text-muted mb-0">@item.Specialty</p>
+                                </div>
+                            </div>
+
+                            @if (ViewBag.SearchMode == "Name")
+                            {
+                                <div class="alert alert-warning p-2">
+                                    <h6 class="fw-bold mb-2">📅 Dolu Olduğu Randevular:</h6>
+                                    @if (item.Appointments != null && item.Appointments.Any())
+                                    {
+                                        <ul class="list-group list-group-flush small">
+                                            @foreach (var app in item.Appointments.OrderBy(a => a.Date).Take(5))
+                                            {
+                                                <li class="list-group-item bg-transparent py-1">
+                                                    🔴 @app.Date.ToString("dd.MM.yyyy HH:mm") 
+                                                    <span class="text-muted">(@app.Status)</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">✅ Yakın zamanda kayıtlı randevusu yok.</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-success text-center py-2">
+                                    ✅ Bu saatte MÜSAİT
+                                </div>
+                            }
+
                         </div>
                         <div class="card-footer bg-white text-center border-0 pb-3">
-                            <a asp-controller="Appointments" asp-action="Index" class="btn btn-outline-primary btn-sm">📅 Hemen Randevu Al</a>
+                            <a asp-controller="Appointments" asp-action="Index" class="btn btn-outline-primary w-100">📅 Randevu Al</a>
                         </div>
                     </div>
                 </div>
             }
         </div>
     }
-    else if (Context.Request.Query.ContainsKey("searchDate"))
+    else if (Context.Request.Query.Count > 0)
     {
-        <div class="alert alert-warning text-center">
-            😔 Üzgünüz, seçilen tarih ve saatte uygun antrenör bulunamadı.
+        <div class="alert alert-danger text-center mt-4">
+            😔 Üzgünüz, aradığınız kriterlere uygun antrenör bulunamadı.
         </div>
     }
 </div>

@@ -1,36 +1,61 @@
 @model FitnessApp.Web.Models.Trainer
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Antrenör Detayı";
 }
 
-<h1>Details</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="bg-primary text-white text-center py-5 position-relative">
+                    <div class="position-absolute top-0 start-0 p-3">
+                        <a asp-action="Index" class="btn btn-outline-light btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Geri Dön</a>
+                    </div>
+                    <img src="@(string.IsNullOrEmpty(Model.PhotoUrl) ? "https://cdn-icons-png.flaticon.com/512/8815/8815112.png" : Model.PhotoUrl)" 
+                         class="rounded-circle border border-4 border-white shadow" 
+                         style="width: 150px; height: 150px; object-fit: cover; margin-bottom: -75px;">
+                </div>
 
-<div>
-    <h4>Trainer</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FullName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FullName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Specialty)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Specialty)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PhotoUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PhotoUrl)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+                <div class="card-body text-center pt-5 mt-4">
+                    <h2 class="fw-bold mb-1">@Model.FullName</h2>
+                    <p class="text-primary fs-5 mb-3">@Model.Specialty</p>
+
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-auto">
+                            <div class="border rounded p-2 px-4 bg-light">
+                                <small class="text-muted d-block">Çalışma Saatleri</small>
+                                <strong class="fs-5">@Model.WorkStartHour:00 - @Model.WorkEndHour:00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 d-inline-block">Verdiği Hizmetler</h5>
+                    <div class="mb-4">
+                        @if (Model.Services != null && Model.Services.Any())
+                        {
+                            @foreach (var service in Model.Services)
+                            {
+                                <span class="badge bg-info text-dark fs-6 me-2 mb-2 px-3 py-2 rounded-pill">
+                                    <i class="bi bi-check-circle-fill me-1"></i> @service.Name
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted fst-italic">Hizmet bulunamadı.</p>
+                        }
+                    </div>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <div class="d-flex justify-content-center gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-4 fw-bold">Düzenle</a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger px-4 fw-bold">Sil</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

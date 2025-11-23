@@ -21,7 +21,7 @@ namespace FitnessApp.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GeneratePlan(double height, double weight, string goal)
+        public async Task<IActionResult> GeneratePlan(double height, double weight, string goal,string gender)
         {
             if (string.IsNullOrEmpty(_apiKey))
             {
@@ -33,7 +33,7 @@ namespace FitnessApp.Web.Controllers
             }
 
             string userPrompt =
-                $"Ben {height} cm boyunda, {weight} kg ağırlığındayım. " +
+                $"Ben {height} cm boyunda, {weight} kg ağırlığında, {gender} cinsiyetinde biriyim. " +
                 $"Hedefim: {GetGoalText(goal)}. " +
                 $"BMI değerimi hesapla. " +
                 $"Kısa bir egzersiz önerisi ver. " +

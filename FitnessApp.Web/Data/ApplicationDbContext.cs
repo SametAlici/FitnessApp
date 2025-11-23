@@ -34,11 +34,12 @@ namespace FitnessApp.Web.Data
             // SQL Server'da "Multiple Cascade Paths" hatasını önlemek için Restrict kullanıyoruz.
             // Yani: Randevusu olan bir antrenörü direkt silemezsin, önce randevuyu iptal etmelisin.
 
+            // Appointment ile Trainer arasındaki ilişkiyi netleştiriyoruz
             builder.Entity<Appointment>()
                 .HasOne(a => a.Trainer)
-                .WithMany()
-                .HasForeignKey(a => a.TrainerId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .WithMany(t => t.Appointments) 
+                .HasForeignKey(a => a.TrainerId) // "TrainerId1" uydurma, "TrainerId" kullan dedik.
+                .OnDelete(DeleteBehavior.Cascade); 
 
             builder.Entity<Appointment>()
                 .HasOne(a => a.Service)

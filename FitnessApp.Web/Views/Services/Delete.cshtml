@@ -1,51 +1,51 @@
 @model FitnessApp.Web.Models.Service
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Hizmeti Sil";
 }
 
-<h1>Delete</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            
+            @if (ViewBag.ErrorMessage != null)
+            {
+                <div class="alert alert-danger d-flex align-items-center shadow-sm mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                    <div>
+                        <strong>İşlem Başarısız!</strong> @ViewBag.ErrorMessage
+                    </div>
+                </div>
+            }
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Service</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DurationMinutes)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DurationMinutes)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h3 class="mb-0 fw-bold"><i class="bi bi-trash"></i> Hizmeti Sil</h3>
+                    <p class="mb-0 small opacity-75">Bu işlem geri alınamaz.</p>
+                </div>
+                <div class="card-body p-4 text-center bg-light">
+                    <h4 class="text-dark fw-bold mb-3">@Model.Name</h4>
+                    
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-auto">
+                            <span class="badge bg-secondary fs-6 p-2">⏱️ @Model.DurationMinutes Dk</span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-success fs-6 p-2">💰 @Model.Price ₺</span>
+                        </div>
+                    </div>
+
+                    <p class="text-muted fst-italic">"@Model.Description"</p>
+
+                    <form asp-action="Delete" class="mt-4">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-grid gap-2">
+                            <input type="submit" value="Evet, Sil" class="btn btn-danger btn-lg fw-bold" />
+                            <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

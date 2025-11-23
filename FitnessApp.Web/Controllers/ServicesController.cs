@@ -106,18 +106,30 @@ namespace FitnessApp.Web.Controllers
         }
 
         // POST: Services/Delete/5
+       // POST: Services/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var service = await _context.Services.FindAsync(id);
-            if (service != null)
+            if (service == null)
+            {
+                return NotFound();
+            }
+
+            try
             {
                 _context.Services.Remove(service);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            catch (DbUpdateException) // Veritabanı kısıtlaması hatası
+            {
+                // Hata mesajını ViewBag ile View'a taşıyoruz
+                ViewBag.ErrorMessage = "Bu hizmeti silemezsiniz çünkü bu hizmete ait kayıtlı randevular bulunmaktadır. Önce randevuları iptal etmelisiniz.";
+                return View(service);
+            }
         }
 
         private bool ServiceExists(int id)

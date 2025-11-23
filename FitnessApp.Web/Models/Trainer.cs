@@ -31,5 +31,7 @@ namespace FitnessApp.Web.Models
 
         // Bir antrenör birden çok hizmet verebilir
         public ICollection<Service>? Services { get; set; }
+
+        public ICollection<Appointment>? Appointments { get; set; }
     }
 }
