@@ -12,9 +12,15 @@
                     <h3 class="mb-0 fw-bold"><i class="bi bi-pencil-square"></i> Hizmeti Düzenle</h3>
                 </div>
                 <div class="card-body p-4 bg-light">
-                    <form asp-action="Edit">
+                    <form asp-action="Edit" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>
                         <input type="hidden" asp-for="Id" />
+
+                        <div class="text-center mb-4">
+                            <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://placehold.co/600x400?text=No+Image" : Model.ImageUrl)" 
+                                 class="img-thumbnail shadow-sm" 
+                                 style="height: 150px; object-fit: cover;">
+                        </div>
 
                         <div class="form-floating mb-3">
                             <input asp-for="Name" class="form-control" placeholder="Hizmet Adı" />
@@ -45,10 +51,12 @@
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-floating mb-4">
-                            <input asp-for="ImageUrl" class="form-control" placeholder="Resim URL" />
-                            <label asp-for="ImageUrl">Resim Bağlantısı (URL)</label>
-                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Yeni Görsel Yükle (Opsiyonel)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-image"></i></span>
+                                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                            </div>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">

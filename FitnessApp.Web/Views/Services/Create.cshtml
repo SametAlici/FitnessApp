@@ -12,7 +12,7 @@
                     <h3 class="mb-0 fw-bold"><i class="bi bi-plus-circle"></i> Yeni Hizmet Ekle</h3>
                 </div>
                 <div class="card-body p-4 bg-light">
-                    <form asp-action="Create">
+                    <form asp-action="Create" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>
 
                         <div class="form-floating mb-3">
@@ -44,10 +44,13 @@
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-floating mb-4">
-                            <input asp-for="ImageUrl" class="form-control" placeholder="Resim URL" />
-                            <label asp-for="ImageUrl">Resim Bağlantısı (URL)</label>
-                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary">Hizmet Görseli Yükle</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-image"></i></span>
+                                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                            </div>
+                            <div class="form-text">Bir görsel seçmezseniz varsayılan resim kullanılacaktır.</div>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
